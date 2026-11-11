@@ -1,0 +1,69 @@
+### Spring Initializr ###
+HELP.md
+
+### Maven ###
+target/
+.pom.xml.tag
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+commits.svg
+.mvn/timing.properties
+
+# NOTE: .mvn/wrapper/maven-wrapper.jar and maven-wrapper.properties are intentionally
+# NOT ignored. The Maven Wrapper files must be committed so the project builds with
+# ./mvnw / mvnw.cmd without a pre-installed Maven.
+
+### IDE ###
+
+### IntelliJ IDEA (all editions, including Free) ###
+.idea/
+*.iws
+*.iml
+*.ipr
+
+### STS ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+
+### NetBeans ###
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+build/
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+### VS Code ###
+.vscode/
+
+### Environment / secrets ###
+.env
+.env.*
+!.env.example
+credentials/
+secrets/
+*.key
+*.keystore
+*.jks
+*.secret
+*.pem
+
+### Build / tool outputs ###
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+### OS ###
+.DS_Store
+Thumbs.db
