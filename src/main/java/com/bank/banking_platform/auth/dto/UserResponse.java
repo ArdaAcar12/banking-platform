@@ -1,7 +1,7 @@
 package com.bank.banking_platform.auth.dto;
 
 import com.bank.banking_platform.auth.entity.Role;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -26,5 +26,5 @@ public class UserResponse {
     private Role role;
     private boolean enabled;
     private boolean accountNonLocked;
-    private LocalDateTime createdAt;
+    private Instant createdAt;
 }

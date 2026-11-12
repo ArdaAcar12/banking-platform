@@ -1,6 +1,6 @@
 package com.bank.banking_platform.common.response;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -16,14 +16,14 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class ApiResponse<T> {
 
-    private LocalDateTime timestamp;
+    private Instant timestamp;
     private boolean success;
     private T data;
     private String message;
 
     public static <T> ApiResponse<T> success(T data) {
         return ApiResponse.<T>builder()
-            .timestamp(LocalDateTime.now())
+            .timestamp(Instant.now())
             .success(true)
             .data(data)
             .build();
@@ -31,7 +31,7 @@ public class ApiResponse<T> {
 
     public static <T> ApiResponse<T> success(T data, String message) {
         return ApiResponse.<T>builder()
-            .timestamp(LocalDateTime.now())
+            .timestamp(Instant.now())
             .success(true)
             .data(data)
             .message(message)

@@ -3,6 +3,7 @@ package com.bank.banking_platform.auth.mapper;
 import com.bank.banking_platform.auth.dto.RegisterRequest;
 import com.bank.banking_platform.auth.dto.UserResponse;
 import com.bank.banking_platform.auth.entity.User;
+import java.time.Instant;
 import java.util.Locale;
 import org.springframework.stereotype.Component;
 

@@ -19,7 +19,7 @@ services:
     container_name: banking-postgres
     restart: unless-stopped
     ports:
-      - "${POSTGRES_PORT:-5432}:5432"
+      - "${POSTGRES_PORT:-5433}:5432"
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-banking}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme}

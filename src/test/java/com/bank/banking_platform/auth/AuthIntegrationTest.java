@@ -10,14 +10,14 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.bank.banking_platform.auth.dto.RegisterRequest;
 import com.bank.banking_platform.auth.entity.Role;
 import com.bank.banking_platform.auth.repository.UserRepository;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 import java.time.Instant;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
@@ -282,7 +282,13 @@ class AuthIntegrationTest {
                 .andExpect(status().isUnauthorized())
                 .andReturn().getResponse().getContentAsString();
 
-            assertThat(existingResponse).isEqualTo(unknownResponse);
+            // Timestamp hariç mesaj alanlarının aynı olması yeterlidir (hata mesajı tutarlı olmalı)
+            var existingNode = objectMapper.readTree(existingResponse);
+            var unknownNode = objectMapper.readTree(unknownResponse);
+            assertThat(existingNode.get("message").asText())
+                .isEqualTo(unknownNode.get("message").asText());
+            assertThat(existingNode.get("status").asInt()).isEqualTo(401);
+            assertThat(unknownNode.get("status").asInt()).isEqualTo(401);
         }
     }
 
@@ -353,7 +359,7 @@ class AuthIntegrationTest {
         void adminShouldAccessAdminEndpoint() throws Exception {
             // Veritabanında bir kullanıcı var olsun
             userRepository.save(com.bank.banking_platform.auth.entity.User.builder()
-                .id(UUID.randomUUID()).email("a@example.com").username("adminuser")
+                .email("a@example.com").username("adminuser")
                 .passwordHash("hash").firstName("A").lastName("Admin")
                 .role(Role.ADMIN).enabled(true).accountNonLocked(true).build());
 

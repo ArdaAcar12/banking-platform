@@ -8,7 +8,6 @@ import com.bank.banking_platform.auth.exception.DuplicateResourceException;
 import com.bank.banking_platform.auth.exception.InvalidRefreshTokenException;
 import com.bank.banking_platform.auth.exception.ResourceNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
-import java.time.LocalDateTime;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

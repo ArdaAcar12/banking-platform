@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.NoHandlerFoundException;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.stream.Collectors;
 
 /**
@@ -101,7 +101,7 @@ public class GlobalExceptionHandler {
             path = path.substring(4);
         }
         ApiError error = ApiError.builder()
-            .timestamp(LocalDateTime.now())
+            .timestamp(Instant.now())
             .status(status.value())
             .error(status.getReasonPhrase())
             .message(message)

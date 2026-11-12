@@ -1,0 +1,10 @@
+$env:SPRING_DATASOURCE_URL = "jdbc:postgresql://localhost:5433/banking_platform"
+$env:SPRING_DATASOURCE_USERNAME = "banking"
+$env:SPRING_DATASOURCE_PASSWORD = "changeme"
+$env:JWT_SECRET = "change-this-to-a-strong-secret"
+
+Write-Host "Environment variables set:"
+Write-Host "SPRING_DATASOURCE_URL: $env:SPRING_DATASOURCE_URL"
+Write-Host "SPRING_DATASOURCE_USERNAME: $env:SPRING_DATASOURCE_USERNAME"
+Write-Host "SPRING_DATASOURCE_PASSWORD: $env:SPRING_DATASOURCE_PASSWORD"
+Write-Host "JWT_SECRET: $env:JWT_SECRET"

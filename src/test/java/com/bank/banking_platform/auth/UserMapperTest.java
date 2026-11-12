@@ -7,7 +7,7 @@ import com.bank.banking_platform.auth.dto.UserResponse;
 import com.bank.banking_platform.auth.entity.Role;
 import com.bank.banking_platform.auth.entity.User;
 import com.bank.banking_platform.auth.mapper.UserMapper;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -30,7 +30,7 @@ class UserMapperTest {
             .role(Role.CUSTOMER)
             .enabled(true)
             .accountNonLocked(true)
-            .createdAt(LocalDateTime.of(2026, 1, 1, 10, 0))
+            .createdAt(Instant.parse("2026-01-01T10:00:00Z"))
             .build();
 
         UserResponse response = mapper.toResponse(user);

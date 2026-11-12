@@ -25,7 +25,7 @@ import com.bank.banking_platform.auth.security.JwtService;
 import com.bank.banking_platform.auth.service.AuthService;
 import com.bank.banking_platform.auth.service.RefreshTokenService;
 import java.time.Instant;
-import java.time.LocalDateTime;
+import java.util.Locale;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
@@ -76,7 +76,7 @@ class AuthServiceTest {
             .role(Role.CUSTOMER)
             .enabled(true)
             .accountNonLocked(true)
-            .createdAt(LocalDateTime.now())
+            .createdAt(Instant.now())
             .build();
     }
 
@@ -107,6 +107,44 @@ class AuthServiceTest {
         assertThat(response.getEmail()).isEqualTo("user@example.com");
         verify(userRepository).save(argThat(u ->
             u.getRole() == Role.CUSTOMER && u.getEmail().equals("user@example.com")));
+    }
+
+    @Test
+    void shouldNormalizeEmailLocaleIndependentlyUnderTurkishLocale() {
+        Locale original = Locale.getDefault();
+        try {
+            // Türkçe (tr-TR) varsayılan locale simulation
+            Locale.setDefault(new Locale("tr", "TR"));
+
+            RegisterRequest request = RegisterRequest.builder()
+                .email("ALI@EXAMPLE.COM")
+                .username("aliuser")
+                .password("Password123")
+                .firstName("Ali")
+                .lastName("Veli")
+                .build();
+
+            // Eski kod (toLowerCase() yoksa Locale.ROOT) Türkçe locale'da 'I'->'ı' dönüşümü yapar ve
+            // "alı@example.com" üretir, bu da eşleşmez. Locale.ROOT ile "ali@example.com" beklenir.
+            when(userRepository.existsByEmail("ali@example.com")).thenReturn(false);
+            when(userRepository.existsByUsername("aliuser")).thenReturn(false);
+            when(passwordEncoder.encode("Password123")).thenReturn("hashed-password");
+            User savedUser = User.builder()
+                .id(UUID.randomUUID()).email("ali@example.com").username("aliuser")
+                .passwordHash("hashed-password").firstName("Ali").lastName("Veli")
+                .role(Role.CUSTOMER).enabled(true).accountNonLocked(true).build();
+            when(userMapper.toEntity(any(), anyString())).thenReturn(savedUser);
+            when(userRepository.save(any(com.bank.banking_platform.auth.entity.User.class))).thenReturn(savedUser);
+            UserResponse expected = UserResponse.builder()
+                .id(savedUser.getId()).email("ali@example.com").role(Role.CUSTOMER).build();
+            when(userMapper.toResponse(savedUser)).thenReturn(expected);
+
+            authService.register(request);
+
+            verify(userRepository).save(argThat(u -> u.getEmail().equals("ali@example.com")));
+        } finally {
+            Locale.setDefault(original);
+        }
     }
 
     @Test

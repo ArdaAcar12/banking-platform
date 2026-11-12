@@ -61,7 +61,7 @@ public class AuthService {
      * E-posta veya kullanıcı adı ile giriş yapar.
      * Kullanıcının varlığı/olmadığı hakkında bilgi vermemek için tüm hatalar genel bir mesajla döner.
      */
-    @Transactional(readOnly = true)
+    @Transactional
     public AuthResponse login(LoginRequest request) {
         String identifier = request.getIdentifier().trim();
         String emailCandidate = identifier.toLowerCase(Locale.ROOT);
@@ -140,6 +140,7 @@ public class AuthService {
     }
 
     private String normalizeEmail(String email) {
-        return email == null ? null : email.trim().toLowerCase();
+        // Locale.ROOT ile yerel-ayara bağımsız (ör. Türkçe'de 'I'->'ı' problemi olmaz).
+        return email == null ? null : email.trim().toLowerCase(Locale.ROOT);
     }
 }
