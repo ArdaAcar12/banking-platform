@@ -84,3 +84,9 @@ frontend/out/
 
 # Additional build outputs
 coverage/
+
+# React / TypeScript generated files
+*.tsbuildinfo
+frontend/vite.config.js
+frontend/vite.config.d.ts
+

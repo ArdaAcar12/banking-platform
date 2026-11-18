@@ -1,0 +1,23 @@
+warning: in the working copy of 'frontend/index.html', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'frontend/package-lock.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'frontend/package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'frontend/tsconfig.app.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'frontend/tsconfig.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'frontend/tsconfig.node.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'frontend/vite.config.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/main/java/com/bank/banking_platform/auth/security/SecurityConfig.java', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/test/java/com/bank/banking_platform/auth/AuthIntegrationTest.java', LF will be replaced by CRLF the next time Git touches it
+ frontend/index.html                                |    9 [32m+[m[31m-[m
+ frontend/package-lock.json                         | 3222 [32m++++++++++++++++[m[31m----[m
+ frontend/package.json                              |   38 [32m+[m[31m-[m
+ frontend/src/App.vue                               |    7 [31m-[m
+ frontend/src/components/HelloWorld.vue             |   95 [31m-[m
+ frontend/src/main.ts                               |    5 [31m-[m
+ frontend/src/style.css                             |  296 [31m--[m
+ frontend/tsconfig.app.json                         |   37 [32m+[m[31m-[m
+ frontend/tsconfig.json                             |   36 [32m+[m[31m-[m
+ frontend/tsconfig.node.json                        |   22 [32m+[m[31m-[m
+ frontend/vite.config.ts                            |   31 [32m+[m[31m-[m
+ .../auth/security/SecurityConfig.java              |    7 [32m+[m[31m-[m
+ .../banking_platform/auth/AuthIntegrationTest.java |   12 [32m+[m
+ 13 files changed, 2800 insertions(+), 1017 deletions(-)

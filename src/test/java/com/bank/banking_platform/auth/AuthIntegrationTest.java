@@ -12,6 +12,7 @@ import com.bank.banking_platform.auth.entity.Role;
 import com.bank.banking_platform.auth.repository.UserRepository;
 import tools.jackson.databind.ObjectMapper;
 import java.time.Instant;
+import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -19,6 +20,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.http.MediaType;
@@ -62,9 +64,19 @@ class AuthIntegrationTest {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private StringRedisTemplate stringRedisTemplate;
+
     @BeforeEach
     void cleanUp() {
         userRepository.deleteAll();
+        // Testler arasında rate limiter state'ini temizle (deterministik testler için)
+        // RateLimitFilter, register/login/refresh endpointlerinde 3-10 istek/dakika sınırı koyar.
+        // Redis state'i temizlenmezse ardışık testler 429 Too Many Requests döner.
+        Set<String> keys = stringRedisTemplate.keys("rate_limit:*");
+        if (keys != null && !keys.isEmpty()) {
+            stringRedisTemplate.delete(keys);
+        }
     }
 
     private String asJson(Object object) throws Exception {
