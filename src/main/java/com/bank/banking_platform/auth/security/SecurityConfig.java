@@ -84,6 +84,10 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.POST, "/api/v1/auth/logout").authenticated()
                 // Kimliği doğrulanmış kullanıcıya özel endpoint'ler
                 .requestMatchers(HttpMethod.GET, "/api/v1/auth/me").authenticated()
+                // Hesap yönetimi endpoint'leri yalnızca kimliği doğrulanmış kullanıcılara açıktır.
+                .requestMatchers(HttpMethod.GET, "/api/v1/accounts").authenticated()
+                .requestMatchers(HttpMethod.GET, "/api/v1/accounts/{id}").authenticated()
+                .requestMatchers(HttpMethod.POST, "/api/v1/accounts").authenticated()
                 // Admin endpoint'leri yalnızca ADMIN rolüne açıktır.
                 .requestMatchers(HttpMethod.GET, "/api/v1/admin/**").hasRole("ADMIN")
                 // Swagger/OpenAPI - yalnızca geliştirme profili için herkese açıkktır.
@@ -129,9 +133,9 @@ public class SecurityConfig {
             String[] origins = allowedOrigins.split(",");
             configuration.setAllowedOriginPatterns(java.util.Arrays.asList(origins));
         } else {
-            // Development default: localhost'lar
+            // Development default: localhost'lar (3001 React development server eklenmiştir)
             configuration.setAllowedOriginPatterns(
-                java.util.Arrays.asList("http://localhost:3000", "http://localhost:4200")
+                java.util.Arrays.asList("http://localhost:3000", "http://localhost:4200", "http://localhost:3001")
             );
         }
 

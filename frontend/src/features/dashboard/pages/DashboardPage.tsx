@@ -1,53 +1,87 @@
 import { useQuery } from '@tanstack/react-query'
 import { useAuth } from '@/features/auth/hooks/useAuth'
 import { authService } from '@/services/authService'
+import { accountService } from '@/services/accountService'
+import { transactionService } from '@/services/transactionService'
 import { useNavigate } from 'react-router-dom'
 
 import { BalanceCard } from '@/components/dashboard/BalanceCard'
 import { AccountCard } from '@/components/dashboard/AccountCard'
 import { QuickActionCard } from '@/components/dashboard/QuickActionCard'
-import { FinancialChart } from '@/components/dashboard/FinancialChart'
 import { TransactionTable } from '@/components/dashboard/TransactionTable'
 import { DashboardSection } from '@/components/dashboard/DashboardSection'
 import { EmptyState } from '@/components/dashboard/EmptyState'
 import { LoadingState } from '@/components/dashboard/LoadingState'
 
 import { demoUser } from '@/data/dashboard'
-import { demoAccounts, demoTotalBalance, demoAvailableBalance } from '@/data/accounts'
-import { demoTransactions, demoMonthlyBalanceHistory } from '@/data/transactions'
 
-import { CreditCard, Send, Clock, RefreshCw, BarChart3 } from 'lucide-react'
+import { CreditCard, Send, Clock, BarChart3 } from 'lucide-react'
+import { Button } from '@/components/ui/Button'
 
 export function DashboardPage() {
   const { user: authUser, isLoading: authLoading, logout } = useAuth()
   const navigate = useNavigate()
 
-  // Fetch real user data from /api/v1/auth/me
-  const { data: meData, isLoading: meLoading, error: meError } = useQuery({
+  const { data: meData, isLoading: meLoading } = useQuery({
     queryKey: ['me'],
     queryFn: authService.me,
     enabled: !!authUser,
     retry: 1,
   })
 
+  const {
+    data: accountsData,
+    isLoading: accountsLoading,
+    error: accountsError,
+  } = useQuery({
+    queryKey: ['accounts'],
+    queryFn: accountService.listAccounts,
+    enabled: !!authUser,
+    retry: 1,
+  })
+
+  const {
+    data: transactionsData,
+    isLoading: transactionsLoading,
+  } = useQuery({
+    queryKey: ['transactions'],
+    queryFn: () =>
+      transactionService.listTransactions({
+        page: 0,
+        size: 6,
+        sort: 'createdAt,desc',
+      }),
+    enabled: !!authUser,
+    retry: 1,
+  })
+
   const user = meData ?? (authUser as any ?? demoUser)
-  const isLoading = authLoading || meLoading
-  const showDemo = !authUser || meError || isLoading
+  const isLoading = authLoading || meLoading || accountsLoading || transactionsLoading
 
   if (isLoading) {
     return <LoadingState />
   }
 
+  const accounts = accountsData?.data ?? []
+  const totalBalance = accounts.reduce(
+    (sum, acc) => sum + acc.balance,
+    0
+  )
+  const availableBalance = accounts.reduce(
+    (sum, acc) => sum + acc.availableBalance,
+    0
+  )
+  const recentTransactions = transactionsData?.data ?? []
+
   return (
     <div className="space-y-8">
-      {/* Welcome Section */}
       <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-4">
         <div className="flex-1">
           <h1 className="text-2xl font-bold text-text-primary">
             Merhaba, {user.firstName}
           </h1>
           <p className="text-text-secondary mt-1">
-            Finansal durumuna genel bir bakis. {showDemo ? '(Demo modu)' : ''}
+            Finansal durumuna genel bir bakış.
           </p>
         </div>
         <div className="flex items-end gap-3">
@@ -61,136 +95,143 @@ export function DashboardPage() {
             onClick={logout}
             className="px-4 py-2.5 text-sm font-medium text-error-foreground bg-error/10 rounded-lg hover:bg-error/20 transition-colors"
           >
-            Cikis Yap
+            Çıkış Yap
           </button>
         </div>
       </div>
 
-      {/* Demo notice (only when using demo data) */}
-      {showDemo && (
-        <div className="rounded-lg border border-warning/20 bg-warning/5 p-4 flex items-center gap-3">
-          <span className="h-5 w-5 rounded-full bg-warning/20 text-warning flex items-center justify-center">
+      {accountsError && (
+        <div className="rounded-lg border border-error/20 bg-error/5 p-4 flex items-center gap-3">
+          <span className="h-5 w-5 rounded-full bg-error/20 text-error flex items-center justify-center">
             <span className="text-[10px] font-bold">!</span>
           </span>
           <div className="flex-1">
-            <p className="text-sm text-warning-foreground font-medium">
-              Demo modu etkin
+            <p className="text-sm text-error-foreground font-medium">
+              Hesaplar yüklenemedi
             </p>
-            <p className="text-xs text-warning-foreground/70 mt-0.5">
-              Gercek hesap ve bakiye API'leri eklenmedigi icin demo veriler goruntulenmektedir.
+            <p className="text-xs text-error-foreground/70 mt-0.5">
+              Lütfen sayfayı yenileyin veya tekrar giriş yapın.
             </p>
           </div>
         </div>
       )}
 
-      {/* Total Balance Card */}
-      <DashboardSection title="Toplam Varlik" subtitle="Hesaplarinizdaki toplam bakiye ozeti">
+      <DashboardSection title="Toplam Varlık" subtitle="Hesaplarınızdaki toplam bakiye özeti">
         <BalanceCard
-          totalBalance={showDemo ? demoTotalBalance : 0}
-          availableBalance={showDemo ? demoAvailableBalance : 0}
+          totalBalance={totalBalance}
+          availableBalance={availableBalance}
           currency="TRY"
         />
       </DashboardSection>
 
-      {/* Account Cards */}
-      <DashboardSection title="Hesaplarim" subtitle="Hesap detaylarini goruntuleyin">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {showDemo ? (
-            demoAccounts.map((acc) => (
+      <DashboardSection title="Hesaplarım" subtitle="Hesap detaylarınızı görüntüleyin">
+        {accounts.length === 0 ? (
+          <EmptyState
+            title="Henüz hesapınız yok"
+            subtitle="Yeni bir hesap açmak için Hesaplar sayfasına gidin."
+            icon={CreditCard}
+            action={
+              <Button
+                onClick={() => navigate('/accounts')}
+                variant="accent"
+              >
+                Yeni Hesap Aç
+              </Button>
+            }
+          />
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            {accounts.map((acc) => (
               <AccountCard
                 key={acc.id}
-                name={acc.name}
-                type={acc.type}
-                maskedIban={acc.maskedIban}
-                lastFour={acc.lastFour}
+                name={
+                  acc.accountType === 'CURRENT'
+                    ? 'Vadesiz Hesap'
+                    : 'Birikim Hesabı'
+                }
+                type={acc.accountType}
+                maskedIban={acc.iban}
+                lastFour={acc.accountNumber.slice(-4)}
                 balance={acc.balance}
                 currency={acc.currency}
-                demo
               />
-            ))
-          ) : (
-            <EmptyState
-              title="Hesap verisi yok"
-              subtitle="Hesap API'si eklenmedigi icin veri goruntulenemiyor."
-              icon={CreditCard}
-            />
-          )}
-        </div>
+            ))}
+          </div>
+        )}
       </DashboardSection>
 
-      {/* Quick Actions */}
-      <DashboardSection title="Hizli Islemler" subtitle="Cok kullanilan bankacilik islemlerine erisim">
+      <DashboardSection title="Hızlı İşlemler" subtitle="Çok kullanılan bankacılık işlemlerine erişim">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
           <QuickActionCard
-            title="Para Gonder"
-            href="/transfers"
+            title="Para Gönder"
             icon={Send}
+            onClick={() => {}}
             disabled
-            demo
           />
           <QuickActionCard
-            title="Hesaplarim"
-            href="/accounts"
+            title="Hesaplarım"
             icon={CreditCard}
-            disabled
-            demo
+            onClick={() => navigate('/accounts')}
           />
           <QuickActionCard
-            title="Kartlarim"
-            href="/cards"
+            title="Kartlarım"
             icon={CreditCard}
+            onClick={() => {}}
             disabled
-            demo
           />
           <QuickActionCard
-            title="Islem Geçmisi"
-            href="/transactions"
+            title="İşlem Geçmişi"
             icon={Clock}
-            disabled
-            demo
+            onClick={() => navigate('/transactions')}
           />
           <QuickActionCard
-            title="Odeme Yap"
-            href="/payments"
+            title="Ödeme Yap"
             icon={Send}
+            onClick={() => {}}
             disabled
-            demo
           />
         </div>
       </DashboardSection>
 
-      {/* Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <DashboardSection title="Bakiye Degisikligi" subtitle="Son 6 aylik bakiye trendi">
-          <FinancialChart data={demoMonthlyBalanceHistory} />
-        </DashboardSection>
-        <DashboardSection title="Kategori Dagilimi" subtitle="Son aya ait harcama kategorileri">
+        <DashboardSection title="Bakiye Değişikliği" subtitle="Demo veriler gösterilmektedir.">
           <div className="h-64 flex items-center justify-center bg-muted/50 rounded-lg">
             <EmptyState
-              title="Grafik yakinda"
-              subtitle="Kategori dagilimi grafiigi yakinda eklenecektir."
+              title="Grafik yakında"
+              subtitle="Grafik verileri gerçek işlemlerle birlikte gösterilecektir."
+              icon={BarChart3}
+            />
+          </div>
+        </DashboardSection>
+        <DashboardSection title="Kategori Dağılımı" subtitle="Demo veriler gösterilmektedir.">
+          <div className="h-64 flex items-center justify-center bg-muted/50 rounded-lg">
+            <EmptyState
+              title="Grafik yakında"
+              subtitle="Kategori dağılımı grafiği gerçek işlemlerle birlikte gösterilecektir."
               icon={BarChart3}
             />
           </div>
         </DashboardSection>
       </div>
 
-      {/* Recent Transactions */}
-      <DashboardSection title="Son Islemler" subtitle="En son yapilan bankacilik hesap hareketleri">
+      <DashboardSection title="Son İşlemler" subtitle="Gerçek işlem geçmişiniz">
         <div className="overflow-x-auto">
-          {showDemo ? (
-            <TransactionTable transactions={demoTransactions.slice(0, 6)} />
-          ) : (
+          {recentTransactions.length === 0 ? (
             <EmptyState
-              title="Islem verisi yok"
-              subtitle="Islem gecmisi API'si eklenmedigi icin veri goruntulenemiyor."
-              icon={RefreshCw}
+              title="Henüz işlem bulunamadı"
+              subtitle="İşlem geçmişiniz burada görünecektir. İlk işleminizi yaparak başlayabilirsiniz."
+              icon={Clock}
             />
+          ) : (
+            <TransactionTable transactions={recentTransactions} />
           )}
         </div>
         <div className="mt-4 flex justify-end">
-          <button className="text-sm text-accent font-medium hover:underline">
-            Tum islemleri goster
+          <button
+            className="text-sm text-accent font-medium hover:underline"
+            onClick={() => navigate('/transactions')}
+          >
+            Tüm işlemleri göster →
           </button>
         </div>
       </DashboardSection>

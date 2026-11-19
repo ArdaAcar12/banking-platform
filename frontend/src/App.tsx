@@ -9,6 +9,8 @@ import { RegisterPage } from '@/features/auth/pages/RegisterPage'
 import { DashboardPage } from '@/features/dashboard/pages/DashboardPage'
 import { ProfilePage } from '@/features/profile/pages/ProfilePage'
 import { UserListPage } from '@/features/admin/pages/UserListPage'
+import { AccountsPage } from '@/features/dashboard/pages/AccountsPage'
+import { TransactionHistoryPage } from '@/features/dashboard/pages/TransactionHistoryPage'
 import { ComingSoonPage } from '@/features/dashboard/pages/ComingSoonPage'
 
 export default function App() {
@@ -41,14 +43,11 @@ export default function App() {
         {/* Coming soon modules (protected) */}
         <Route
           path="accounts"
-          element={
-            <PrivateRoute>
-              <ComingSoonPage
-                moduleName="Hesaplarım"
-                description="Hesap detayları, IBAN ve bakiye bilgileri yakında eklenecektir."
-              />
-            </PrivateRoute>
-          }
+          element={<PrivateRoute><AccountsPage /></PrivateRoute>}
+        />
+        <Route
+          path="transactions"
+          element={<PrivateRoute><TransactionHistoryPage /></PrivateRoute>}
         />
         <Route
           path="transfers"

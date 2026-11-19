@@ -67,12 +67,7 @@ export function LoginPage() {
             <LoginForm />
           </CardContent>
           <CardDescription className="p-6 pt-0 text-center">
-            <p className="text-sm text-text-secondary">
-              Henüz hesabınız yok mu?{' '}
-              <Link to="/register" className="font-medium text-primary hover:text-primary-hover">
-                Kayıt olun
-              </Link>
-            </p>
+            Henüz hesabınız yok mu? <Link to="/register" className="font-medium text-primary hover:text-primary-hover">Kayıt olun</Link>
           </CardDescription>
         </Card>
       </div>
