@@ -1,45 +1,32 @@
 import { cn } from '@/lib/utils'
+import type { Transaction } from '@/types/transaction'
 
 export interface TransactionTableProps {
-  transactions: Array<{
-    id: string
-    description: string
-    category: string
-    amount: number
-    type: 'INCOME' | 'EXPENSE'
-    date: string
-    status: 'COMPLETED' | 'PENDING' | 'FAILED'
-    merchant?: string
-  }>
+  transactions: Transaction[]
 }
 
 const statusConfig: Record<string, { bg: string; text: string; label: string }> = {
-  COMPLETED: { bg: 'bg-success/10', text: 'text-success', label: 'Tamamlandi' },
+  COMPLETED: { bg: 'bg-success/10', text: 'text-success', label: 'Tamamlandı' },
   PENDING: { bg: 'bg-warning/10', text: 'text-warning', label: 'Beklemede' },
-  FAILED: { bg: 'bg-error/10', text: 'text-error', label: 'Basarisiz' },
+  FAILED: { bg: 'bg-error/10', text: 'text-error', label: 'Başarısız' },
+  REVERSED: { bg: 'bg-error/10', text: 'text-error', label: 'Geri Alındı' },
 }
 
 const typeConfig: Record<string, { bg: string; text: string; label: string }> = {
-  INCOME: { bg: 'bg-success/10', text: 'text-success', label: 'Gelir' },
-  EXPENSE: { bg: 'bg-error/10', text: 'text-error', label: 'Gider' },
+  TRANSFER: { bg: 'bg-primary/10', text: 'text-primary', label: 'Transfer' },
+  DEPOSIT: { bg: 'bg-success/10', text: 'text-success', label: 'Yatırma' },
+  WITHDRAWAL: { bg: 'bg-error/10', text: 'text-error', label: 'Çekme' },
+  FEE: { bg: 'bg-warning/10', text: 'text-warning', label: 'Ücret' },
 }
 
 export function TransactionTable({ transactions }: TransactionTableProps) {
-  const formatCurrency = (value: number) => {
+  const formatCurrency = (value: number, currency: string = 'TRY') => {
     return new Intl.NumberFormat('tr-TR', {
       style: 'currency',
-      currency: 'TRY',
+      currency,
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
     }).format(value)
-  }
-
-  const formatDate = (dateStr: string) => {
-    return new Date(dateStr).toLocaleDateString('tr-TR', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-    })
   }
 
   return (
@@ -48,67 +35,88 @@ export function TransactionTable({ transactions }: TransactionTableProps) {
         <thead>
           <tr className="border-b border-border">
             <th className="px-6 py-4 text-xs font-medium text-text-secondary uppercase tracking-wider">
-              Islem
+              İşlem
             </th>
             <th className="px-6 py-4 text-xs font-medium text-text-secondary uppercase tracking-wider">
-              Kategori
+              Tür
             </th>
             <th className="px-6 py-4 text-xs font-medium text-text-secondary uppercase tracking-wider text-right">
               Tutar
             </th>
             <th className="px-6 py-4 text-xs font-medium text-text-secondary uppercase tracking-wider">
-              Tarih
+              Para Birimi
             </th>
             <th className="px-6 py-4 text-xs font-medium text-text-secondary uppercase tracking-wider">
               Durum
+            </th>
+            <th className="px-6 py-4 text-xs font-medium text-text-secondary uppercase tracking-wider">
+              Tarih
+            </th>
+            <th className="px-6 py-4 text-xs font-medium text-text-secondary uppercase tracking-wider text-right">
+              İşlem Detayı
             </th>
           </tr>
         </thead>
         <tbody className="divide-y divide-border">
           {transactions.map((tx) => {
             const status = statusConfig[tx.status]
-            const type = typeConfig[tx.type]
+            const type = typeConfig[tx.transactionType]
             return (
               <tr key={tx.id} className="hover:bg-muted/50 transition-colors">
                 <td className="px-6 py-4">
                   <div className="flex items-center gap-3">
                     <div className="flex h-8 w-8 items-center justify-center rounded-full bg-accent/10">
                       <span className="text-[10px] font-medium text-accent">
-                        {tx.merchant ? tx.merchant.charAt(0) : tx.description.charAt(0)}
+                        {tx.referenceNumber.charAt(0)}
                       </span>
                     </div>
                     <div>
                       <p className="text-sm font-medium text-text-primary">
                         {tx.description}
                       </p>
-                      {tx.merchant && (
-                        <p className="text-xs text-text-secondary">
-                          {tx.merchant}
-                        </p>
-                      )}
+                      <p className="text-xs text-text-secondary">
+                        {tx.referenceNumber}
+                      </p>
                     </div>
                   </div>
                 </td>
                 <td className="px-6 py-4">
                   <span className="text-xs text-text-secondary">
-                    {tx.category}
+                    {type.label}
                   </span>
                 </td>
                 <td className="px-6 py-4 text-right">
-                  <span className={cn('text-sm font-medium', type.text)}>
-                    {type.label === 'Gelir' ? '+' : '-'}
-                    {formatCurrency(Math.abs(tx.amount))}
+                  <span className={cn('text-sm font-medium', tx.amount >= 0 ? 'text-success' : 'text-error')}>
+                    {tx.amount >= 0 ? '+' : '-'}{formatCurrency(Math.abs(tx.amount), tx.currency)}
                   </span>
                 </td>
                 <td className="px-6 py-4">
                   <span className="text-sm text-text-secondary">
-                    {formatDate(tx.date)}
+                    {tx.currency}
                   </span>
                 </td>
                 <td className="px-6 py-4">
                   <span className={cn('inline-flex items-center rounded-full px-2 py-1 text-xs font-medium', status.bg, status.text)}>
                     {status.label}
                   </span>
+                </td>
+                <td className="px-6 py-4">
+                  <span className="text-sm text-text-secondary">
+                    {new Date(tx.createdAt).toLocaleDateString('tr-TR', {
+                      day: '2-digit',
+                      month: '2-digit',
+                      year: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit',
+                    })}
+                  </span>
+                </td>
+                <td className="px-6 py-4 text-right">
+                  <button
+                    className="text-xs text-accent font-medium hover:underline"
+                  >
+                    Detay
+                  </button>
                 </td>
               </tr>
             )
